@@ -3,7 +3,7 @@ version: "3"
 services:
   #MongoDB
   mongodb:
-    container_name: database_container
+    container_name: database_container_prod
     image: mongo:latest
     restart: always
     volumes:
