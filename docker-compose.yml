@@ -1,7 +1,5 @@
-version: "3"
-
 services:
-  #MongoDB
+  # MongoDB
   mongodb:
     container_name: database_container_prod
     image: mongo:latest
@@ -9,8 +7,10 @@ services:
     volumes:
       - mongodb:/data/db
 
-  app:
-    build: .
+  # Express API
+  server:
+    build: ./server
+    container_name: express_api
     ports:
       - 4000:3000
     environment:
@@ -19,6 +19,15 @@ services:
       MONGODB_URI: mongodb://mongodb:27017/dockerlearn
     depends_on:
       - mongodb
+
+  # React Frontend
+  client:
+    build: ./client
+    container_name: react_app
+    ports:
+      - 8080:80
+    depends_on:
+      - server
 
 volumes:
   mongodb: {}
