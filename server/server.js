@@ -15,15 +15,12 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://mongodb:27017/dockerle
 const app = express();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:8080' })); // Allow React frontend
+app.use(cors({ origin: 'http://localhost:8080' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // MongoDB connection
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
@@ -31,6 +28,7 @@ mongoose.connect(MONGODB_URI, {
 const noteSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
+  category: { type: String, default: 'Others' },
 }, { timestamps: true });
 
 const Note = mongoose.model('Note', noteSchema);
@@ -59,11 +57,11 @@ app.get('/api/notes/:id', async (req, res) => {
 
 app.post('/api/notes', async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, category } = req.body;
     if (!title || !content) {
       return res.status(400).json({ message: 'Title and content are required' });
     }
-    const note = await Note.create({ title, content });
+    const note = await Note.create({ title, content, category: category || 'Others' });
     res.status(201).json(note);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -72,13 +70,13 @@ app.post('/api/notes', async (req, res) => {
 
 app.put('/api/notes/:id', async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content, category } = req.body;
     if (!title || !content) {
       return res.status(400).json({ message: 'Title and content are required' });
     }
     const note = await Note.findByIdAndUpdate(
       req.params.id,
-      { title, content },
+      { title, content, category: category || 'Others' },
       { new: true, runValidators: true }
     );
     if (!note) {
